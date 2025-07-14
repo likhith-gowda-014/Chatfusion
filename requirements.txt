@@ -6,5 +6,4 @@ chromadb
 numpy
 pandas
 requests
-sqlite3
 Flask-Session
