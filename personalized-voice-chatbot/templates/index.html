@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Voice Chatbot</title>
+</head>
+<body style="
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #8e44ad, #6c5ce7, #00bcd4, #8e44ad);
+    background-size: 600% 600%;
+    animation: animatedBg 16s ease infinite;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+    color: white;
+">
+
+<h1 style="
+    font-size: 3em;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 0 0 10px #9c27b0, 0 0 20px #8e44ad, 0 0 40px #6c63ff;
+    margin-bottom: 60px;
+    font-family: 'Trebuchet MS', sans-serif;
+">
+    🎙 Welcome to Your Personalized Voice Chatbot
+</h1>
+
+<a href="/train-model">
+    <button style="
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(6px);
+        color: #ffffff;
+        padding: 15px 30px;
+        margin: 12px;
+        border: 2px solid #b388ff;
+        border-radius: 15px;
+        font-size: 1.1em;
+        cursor: pointer;
+        transition: 0.3s ease;
+    " onmouseover="this.style.background='rgba(108, 99, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'">
+        🚀 Train New Voice Model
+    </button>
+</a>
+
+<a href="/chat">
+    <button style="
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(6px);
+        color: #ffffff;
+        padding: 15px 30px;
+        margin: 12px;
+        border: 2px solid #80d8ff;
+        border-radius: 15px;
+        font-size: 1.1em;
+        cursor: pointer;
+        transition: 0.3s ease;
+    " onmouseover="this.style.background='rgba(0, 188, 212, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'">
+        💬 Chat with the Bot
+    </button>
+</a>
+
+<style>
+@keyframes animatedBg {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+}
+</style>
+
+</body>
+</html>
