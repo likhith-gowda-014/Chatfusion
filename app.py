@@ -208,7 +208,7 @@ def dashboard():
 def logout():
     session.pop('userid', None)
     session.pop('name', None)
-    return redirect(url_for('signin'))
+    return redirect(url_for('home'))
 
 def analyze_emotion_trend():
     try:
@@ -392,18 +392,14 @@ def tts_audio():
 def digital_twin():
     return render_template('digital_twin.html')
 
-# Route for Virtual Bonding Page
-@app.route('/virtual_bonding')
-def virtual_bonding():
-    return render_template('virtual_bonding.html')
-
 @app.route('/carebot_purpose')
 def carebot_purpose():
     return render_template('carebot_purpose.html') 
 
 @app.route('/stt_tts_purpose')
 def stt_tts_purpose():
-    return render_template('stt_tts_purpose.html') 
+    latest_emotion = load_latest_emotion()
+    return render_template('stt_tts_purpose.html', emotion=latest_emotion)
 
 if __name__ == '__main__':
     app.run(debug=True)

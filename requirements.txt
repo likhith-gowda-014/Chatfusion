@@ -1,10 +1,10 @@
 flask
 mysql-connector-python
 opencv-python-headless
-tensorflow==2.13.0
 deepface
 chromadb
 numpy
 pandas
 requests
+sqlite3
 Flask-Session
