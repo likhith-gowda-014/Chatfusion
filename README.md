@@ -15,23 +15,55 @@
     * **Model Training Flow**: Users upload a few audio samples, which the application saves and registers in an SQLite database.
     * **Voice Generation**: When a user selects their trained model, the application uses one of the stored audio samples as a **reference voice** to generate the AI's response in that specific voice.
 
+---
+
 ## 🧠 Workflow
 
 ### 1. User Interaction and Emotion Detection
-
 The user's journey begins on the `home.html` page. Once the user logs in, they can access the `dashboard` and the chat features. A separate thread runs the `capture_emotion()` function, which uses OpenCV and DeepFace to analyze webcam frames every 3 seconds. The detected dominant emotion is stored in `data/emotions.json` with a timestamp.
 
 ### 2. Audio Processing and AI Response Generation
-
 When a user speaks, the audio is sent to the `/upload-audio` endpoint.
 
-1.  The audio file is saved temporarily, converted to a WAV format, and then transcribed into text using `faster_whisper`.
-2.  The application loads the latest emotion from the `emotions.json` file.
-3.  The `get_ai_response_unified()` function crafts a system prompt that combines a chosen **role** (assistant, friend, or tutor) with an **emotional modifier** based on the detected emotion.
-4.  This tailored prompt and the user's transcribed text are sent to the **OpenRouter API** to get a response from an LLM like Llama-3.
-5.  The AI's text response is then passed to the **XTTSv2** model. The model uses a reference audio clip from the user's previously trained voice model to generate an audio response that mimics their voice.
-6.  The final audio file is saved and returned to the user.
+1. The audio file is saved temporarily, converted to a WAV format, and then transcribed into text using `faster_whisper`.
+2. The application loads the latest emotion from the `emotions.json` file.
+3. The `get_ai_response_unified()` function crafts a system prompt that combines a chosen **role** (assistant, friend, or tutor) with an **emotional modifier** based on the detected emotion.
+4. This tailored prompt and the user's transcribed text are sent to the **OpenRouter API** to get a response from an LLM like Llama-3.
+5. The AI's text response is then passed to the **XTTSv2** model. The model uses a reference audio clip from the user's previously trained voice model to generate an audio response that mimics their voice.
+6. The final audio file is saved and returned to the user.
 
-### 3. Future Roadmap
+---
 
+## 🎤 Zero-Shot Learning & Voice Cloning (Detailed Breakdown)
+
+Based on the code and context, the zero-shot learning in this project works by leveraging the **XTTSv2** model's ability to clone voices from minimal data.
+
+### Workflow Breakdown 🛠️
+1. **Initial Voice Model Training**
+   - When a user uploads voice samples on `/train-model`, the **pydub** library converts them to `.wav` format and saves them in a unique directory.  
+   - This path is stored in SQLite, linking a user-defined model name to its samples.  
+   - This isn’t long-term training but just reference audio preparation for zero-shot inference.
+
+2. **Audio Analysis and Transcription**
+   - User speaks and sends audio via `/upload-audio`.  
+   - The file is converted to `.wav`.  
+   - **faster_whisper** transcribes the audio into text, representing the user’s intended chatbot message.
+
+3. **AI Response Generation**
+   - The system retrieves the latest emotion from **DeepFace**.  
+   - A specialized prompt combining **role** + **emotion modifier** is created.  
+   - This prompt and transcription are sent to **OpenRouter (Llama-3)** for response generation.
+
+4. **Zero-Shot Voice Cloning & Synthesis**
+   - The **XTTSv2** model, pre-trained on diverse voices, performs cloning.  
+   - Inputs:  
+     * The AI’s text response.  
+     * The user’s saved `.wav` reference sample.  
+   - The model’s **speaker encoder** generates a voice embedding from the sample (tone, pitch, style).  
+   - XTTSv2 synthesizes the AI response in the user’s cloned voice.  
+   - The final `.wav` file is saved and returned to the user.
+
+---
+
+## 🚀 Future Roadmap
 The project aims to integrate **ChromaDB** with a **vector embedding model**. This will allow the chatbot to store and retrieve relevant conversation history, providing the LLM with richer emotional context for more consistent and coherent responses over time.
