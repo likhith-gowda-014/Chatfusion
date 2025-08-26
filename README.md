@@ -67,3 +67,4 @@ Based on the code and context, the zero-shot learning in this project works by l
 
 ## 🚀 Future Roadmap
 The project aims to integrate **ChromaDB** with a **vector embedding model**. This will allow the chatbot to store and retrieve relevant conversation history, providing the LLM with richer emotional context for more consistent and coherent responses over time.
+
