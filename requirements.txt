@@ -1,0 +1,10 @@
+flask
+mysql-connector-python
+opencv-python-headless
+deepface
+chromadb
+numpy
+pandas
+requests
+sqlite3
+Flask-Session

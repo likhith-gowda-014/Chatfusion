@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Chatbot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #4a4a4a;
+            /* Use a background image from your static folder */
+            background: url('static/images/digital_twin_1.jpg') no-repeat center center fixed;
+            background-size: cover;
+            position: relative;
+        }
+
+        /* Add a semi-transparent overlay to improve text readability */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+
+        .main-container {
+            text-align: center;
+            padding: 20px;
+            z-index: 1;
+        }
+
+        h1 {
+            color: #fff;
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        .cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            width: 300px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #3F51B5;
+        }
+
+        .card-description {
+            font-size: 0.9em;
+            color: #666;
+            min-height: 80px;
+        }
+
+        .card-btn {
+            display: inline-block;
+            padding: 12px 25px;
+            margin-top: 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s ease;
+            color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .train-btn { background-color: #7c4dff; }
+        .train-btn:hover { background-color: #6a39ff; }
+
+        .chat-btn { background-color: #7c4dff; }
+        .chat-btn:hover { background-color: #6a39ff; }
+        
+        /* The back button is separate to be centered and below the cards */
+        .back-btn-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 12px 25px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #fff;
+            background-color: #a18cd1;
+            transition: background 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .back-btn:hover {
+            background-color: #8a71b1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <h1>Welcome, {{ username }}!</h1>
+        <div class="cards-container">
+            <div class="card">
+                <div class="card-title"><i class="fas fa-microphone-alt"></i> Train Your Voice</div>
+                <p class="card-description">
+                    Create a personalized voice model from your own voice recordings for a unique experience.
+                </p>
+                <a href="/train-model" class="card-btn train-btn">Train Now</a>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-comments"></i> Chat with Your Bot</div>
+                <p class="card-description">
+                    Engage in a conversation with the chatbot using your own trained voice model.
+                </p>
+                <a href="/persona_chat" class="card-btn chat-btn">Chat Now</a>
+            </div>
+        </div>
+
+        <div class="back-btn-container">
+            <a href="/dashboard" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</body>
+</html>

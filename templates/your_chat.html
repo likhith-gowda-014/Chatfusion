@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat with Bot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #4a4a4a;
+      background: url('static/images/train_voice.gif') no-repeat center center fixed;
+      background-size: cover;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: -1;
+    }
+
+    .chat-container {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+      width: 350px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .chat-title {
+      font-size: 1.5em;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #3F51B5;
+    }
+
+    .card-description {
+      font-size: 0.9em;
+      color: #555;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      font-weight: 600;
+      margin: 15px 0 8px;
+      color: #333;
+    }
+
+    select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+      font-size: 1em;
+      outline: none;
+      box-sizing: border-box;
+      text-align: center;
+      transition: border-color 0.3s ease;
+    }
+
+    select:focus {
+      border-color: #6a5ce7;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      font-size: 1em;
+      border-radius: 15px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: white;
+      margin-top: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .start-btn {
+      background-color: #6a5ce7;
+    }
+
+    .start-btn:hover {
+      background-color: #5c4ad1;
+      transform: translateY(-2px);
+    }
+
+    .stop-btn {
+      background-color: #a18cd1;
+    }
+
+    .stop-btn:hover {
+      background-color: #8a71b1;
+      transform: translateY(-2px);
+    }
+
+    audio {
+      width: 100%;
+      margin: 20px 0;
+      border-radius: 12px;
+    }
+
+    .back-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 10px;
+      text-decoration: none;
+      color: white;
+      background-color: #6a85b6;
+      transition: background 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-top: 15px;
+    }
+
+    .back-btn:hover {
+      background-color: #5c6fa7;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-title">
+      <i class="fas fa-comments"></i> Chat with Your Bot
+    </div>
+    <p class="card-description">
+      Start a conversation with your personalized AI voice assistant.
+    </p>
+
+    <label><i class="fas fa-headphones"></i> Select Trained Voice:</label>
+    <select id="voice_id">
+      {% for voice in voices %}
+        <option value="{{ voice }}">{{ voice }}</option>
+      {% endfor %}
+    </select>
+
+    <label><i class="fas fa-brain"></i> Choose Conversation Style:</label>
+    <select id="prompt-template" name="prompt-template">
+      <option value="assistant">Assistant</option>
+      <option value="friend">Friend</option>
+      <option value="tutor">Tutor</option>
+    </select>
+
+    <button class="btn start-btn" onclick="startRecording()">
+      <i class="fas fa-microphone"></i> Start
+    </button>
+    <button class="btn stop-btn" onclick="stopRecording()">
+      <i class="fas fa-stop-circle"></i> Stop & Send
+    </button>
+
+    <audio id="responseAudio" controls></audio>
+
+    <a href="/digital_twin" class="back-btn">
+      <i class="fas fa-arrow-left"></i> Back to Home
+    </a>
+  </div>
+
+  <script src="/static/assets/js/chat.js"></script>
+</body>
+</html>

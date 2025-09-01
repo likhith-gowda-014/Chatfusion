@@ -1,0 +1,30 @@
+[
+    {
+        "timestamp": "2025-09-02 00:38:26.126761",
+        "emotion": "neutral"
+    },
+    {
+        "timestamp": "2025-09-02 00:38:29.320882",
+        "emotion": "neutral"
+    },
+    {
+        "timestamp": "2025-09-02 00:38:32.520624",
+        "emotion": "neutral"
+    },
+    {
+        "timestamp": "2025-09-02 00:38:35.719614",
+        "emotion": "neutral"
+    },
+    {
+        "timestamp": "2025-09-02 00:38:38.936177",
+        "emotion": "angry"
+    },
+    {
+        "timestamp": "2025-09-02 00:38:42.114104",
+        "emotion": "angry"
+    },
+    {
+        "timestamp": "2025-09-02 00:38:45.289826",
+        "emotion": "angry"
+    }
+]

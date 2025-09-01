@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Train a Voice Model</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #4a4a4a;
+            background: url('static/images/train_voice.gif') no-repeat center center fixed;
+            background-size: cover;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: -1;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            width: 350px;
+            text-align: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            margin-top: 20px;
+        }
+
+        .form-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #3F51B5;
+            text-shadow: none;
+        }
+
+        .form-description {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 25px;
+            border-radius: 12px;
+            border: 1px solid #ccc;
+            outline: none;
+            font-size: 1em;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+            text-align: center;
+        }
+
+        input[type="text"]:focus {
+            border-color: #6a5ce7;
+        }
+        
+        .custom-file-input {
+            display: inline-flex;        /* Makes it size like a button */
+            justify-content: center;
+            align-items: center;
+            padding: 14px 35px;          /* Match submit button padding */
+            border: 2px dashed #6a5ce7;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #6a5ce7;
+            background-color: #f8f8f8;
+            margin: 10px auto;           /* Center it */
+            width: 78%;                 /* Remove forced full width */
+            max-width: 280px;       /* prevents it from being too long */
+        }
+
+        .custom-file-input:hover {
+            border-color: #5c4ad1;
+            background-color: #e8e8e8;
+        }
+
+        /* Add a new rule to style the inner span for centering */
+        .custom-file-input span {
+            max-width: 90%; /* Prevents text from pushing the button too far */
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Space between icon and text */
+        }
+        
+        .file-info {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 5px;
+            text-align: center;
+            color: #666;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px 25px;
+            font-size: 1.1em;
+            border-radius: 15px;
+            border: none;
+            background-color: #6a5ce7;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 25px;
+        }
+        
+        .submit-btn:hover {
+            background-color: #5c4ad1;
+            transform: translateY(-2px);
+        }
+
+        .loader {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+            width: 300px;
+        }
+
+        .spinner {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #6a5ce7;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        .back-btn-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: white;
+            background-color: #a18cd1;
+            transition: background 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .back-btn:hover {
+            background-color: #8a71b1;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <form id="trainForm" class="form-container" action="/train-model" method="POST" enctype="multipart/form-data" onsubmit="showLoader()">
+        <div class="form-title">
+            <i class="fas fa-microphone-alt"></i> Train Your Voice
+        </div>
+        <div class="form-description">
+            Create a personalized voice model from your own voice recordings for a unique experience.
+        </div>
+        
+        <label for="model_name">Model Name:</label>
+        <input type="text" id="model_name" name="model_name" required placeholder="e.g., My Voice Model" />
+
+        <label for="voice_samples">Upload Voice Samples:</label>
+        <p class="file-info">(At least 5 audio files for best results)</p>
+        
+        <div class="custom-file-input">
+            <span id="file-name-display"><i class="fas fa-upload"></i> Choose Files</span>
+            <input type="file" id="voice_samples" name="voice_samples" multiple required style="display: none;" onchange="updateFileNameDisplay(this)" />
+        </div>
+
+        <button type="submit" class="submit-btn">🎯 Train & Save</button>
+    </form>
+
+    <div id="loader" class="loader">
+        <div class="spinner"></div>
+        <p id="status-text" class="status-text" style="color: #6a5ce7;">Training model... Please wait</p>
+        <p style="color: #6a5ce7; font-size: 0.8em; opacity: 0.7; margin-top: 5px;">This may take a few minutes.</p>
+    </div>
+
+    <div class="back-btn-container">
+        <a href="/digital_twin" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Home</a>
+    </div>
+
+<script>
+    // This is a direct click handler on the span to prevent the full div from being clickable.
+    document.getElementById('file-name-display').addEventListener('click', function(event) {
+        event.preventDefault();
+        document.getElementById('voice_samples').click();
+    });
+
+    function showLoader() {
+        document.getElementById("trainForm").style.display = "none";
+        document.getElementById("loader").style.display = "block";
+    }
+
+    function updateFileNameDisplay(input) {
+        const fileNameDisplay = document.getElementById('file-name-display');
+        if (input.files.length > 0) {
+            fileNameDisplay.innerHTML = `<i class="fas fa-check-circle"></i> ${input.files.length} file(s) chosen`;
+        } else {
+            fileNameDisplay.innerHTML = `<i class="fas fa-upload"></i> Choose Files`;
+        }
+    }
+</script>
+
+</body>
+</html>
