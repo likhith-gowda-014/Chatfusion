@@ -10,7 +10,7 @@ bcrypt==4.2.1
 faster-whisper==1.1.1
 gTTS==2.5.4
 pydub==0.25.1
-TTS>=0.23.0
+TTS==0.22.0
 Resemblyzer==0.1.4
 opencv-python==4.8.1.78
 soundfile==0.13.1
