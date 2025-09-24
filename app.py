@@ -148,12 +148,6 @@ def store_emotion(emotion):
         print(f"Error storing emotion: {e}")
 
 # Function to capture emotion continuously
-# ... (all your existing imports)
-
-# Function to capture emotion continuously
-# ... (your existing code)
-
-# Function to capture emotion continuously
 def capture_emotion():
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -179,12 +173,13 @@ def capture_emotion():
     cv2.destroyAllWindows()
 
 # Conditional startup based on environment
-if not os.getenv("IS_RENDER"):
+if os.getenv("IS_RENDER", "false").lower() == "true":
+    print("Running in Render environment. Skipping camera thread.")
+else:
     try:
         threading.Thread(target=capture_emotion, daemon=True).start()
     except Exception as e:
         print(f"Could not start deepface thread: {e}")
-        # We don't need to do anything here because the main app will continue to run
         pass
 
 # Home Route
