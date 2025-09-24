@@ -20,5 +20,5 @@ anyascii==0.3.3
 g2pkk==0.1.2
 scipy==1.11.2
 spacy==3.5.4
-tensorflow==2.10.0
-tf-keras==2.10.0
+tensorflow==2.15.0
+tf-keras==2.15.0
