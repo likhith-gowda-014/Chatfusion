@@ -75,12 +75,12 @@ def init_persona_db():
 init_persona_db()
 
 # Initialize STT
-try:
-    stt_model = WhisperModel("tiny.en", compute_type="int8")
-except Exception as e:
-    # Handle the error gracefully if Whisper model fails to load
-    print(f"Error initializing Whisper model: {e}")
-    stt_model = None
+#try:
+#    stt_model = WhisperModel("tiny.en", compute_type="int8")
+#except Exception as e:
+#    # Handle the error gracefully if Whisper model fails to load
+#    print(f"Error initializing Whisper model: {e}")
+#    stt_model = None
 
 # ✅ FIX 1: Lazy Load TTS Model and Cache
 CACHED_TTS_MODEL = None
@@ -98,6 +98,19 @@ def get_tts_model():
     return CACHED_TTS_MODEL
 # Original tts_model initialization removed here
 
+# ✅ FIX: Lazy Load Whisper Model and Cache
+CACHED_WHISPER_MODEL = None
+def get_whisper_model():
+    global CACHED_WHISPER_MODEL
+    if CACHED_WHISPER_MODEL is None:
+        print("Loading Whisper model for the first time...")
+        try:
+            CACHED_WHISPER_MODEL = WhisperModel("tiny.en", device="cpu", compute_type="int8")
+        except Exception as e:
+            print(f"Failed to load Whisper model: {e}")
+            return None
+    return CACHED_WHISPER_MODEL
+	
 # Initialize DB schema if not exists
 with db:
     db.execute("""
@@ -549,6 +562,11 @@ def speech_to_text():
             temp_audio_path = temp_audio_file.name
 
         print(f"Processing audio file at: {temp_audio_path}")
+		# ✅ FIX: Use the lazy-loaded model
+        stt_model = get_whisper_model()
+        if stt_model is None:
+             return jsonify({"error": "Speech recognition model unavailable"}), 500
+			
         segments, _ = stt_model.transcribe(temp_audio_path, beam_size=5)
         transcribed_text = " ".join([segment.text for segment in segments]).strip()
         print(f"Transcribed text: {transcribed_text}")
@@ -766,6 +784,11 @@ def upload_audio():
         sound.export(filepath, format="wav")
 
     print("Transcribing...")
+	# ✅ FIX: Use the lazy-loaded model
+    stt_model = get_whisper_model()
+    if stt_model is None:
+        return jsonify({"error": "Speech recognition model unavailable"}), 500
+		
     segments, _ = stt_model.transcribe(filepath)
     text = "".join([seg.text for seg in segments])
     print(f"Transcribed text: {text}")
