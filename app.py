@@ -20,10 +20,13 @@ from chromadb.utils import embedding_functions
 import uuid
 from TTS.api import TTS
 from pydub import AudioSegment
+from dotenv import load_dotenv
 
 # Add these new imports for the cosine similarity calculation
 from resemblyzer import VoiceEncoder, preprocess_wav
 import numpy as np
+
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "your-secret-key")  # Replace with a secure key in production
@@ -72,10 +75,28 @@ def init_persona_db():
 init_persona_db()
 
 # Initialize STT
-whisper_model = WhisperModel("tiny.en", compute_type="int8")
+try:
+    stt_model = WhisperModel("tiny.en", compute_type="int8")
+except Exception as e:
+    # Handle the error gracefully if Whisper model fails to load
+    print(f"Error initializing Whisper model: {e}")
+    stt_model = None
 
-# ✅ Switch to XTTSv2 for real speaker cloning
-tts_model = TTS(model_name="tts_models/multilingual/multi-dataset/your_tts", progress_bar=False, gpu=False)
+# ✅ FIX 1: Lazy Load TTS Model and Cache
+CACHED_TTS_MODEL = None
+def get_tts_model():
+    global CACHED_TTS_MODEL
+    if CACHED_TTS_MODEL is None:
+        print("Loading TTS model (XTTSv2) for the first time... This is resource intensive.")
+        try:
+            # XTTSv2 requires significant memory. If this still crashes Render, you must 
+            # upgrade your plan or change to a smaller TTS model.
+            CACHED_TTS_MODEL = TTS(model_name="tts_models/multilingual/multi-dataset/your_tts", progress_bar=False, gpu=False)
+        except Exception as e:
+            print(f"Failed to load XTTS model: {e}")
+            return None
+    return CACHED_TTS_MODEL
+# Original tts_model initialization removed here
 
 # Initialize DB schema if not exists
 with db:
@@ -147,11 +168,19 @@ def store_emotion(emotion):
     except Exception as e:
         print(f"Error storing emotion: {e}")
 
+# ✅ FIX 2: Conditional Emotion Capture (Prevents Render Crash)
+# Use an environment variable (like the one Render sets) to detect cloud environment
+ENABLE_LIVE_EMOTION = os.getenv("RENDER_EXTERNAL_URL") is None and os.getenv("IS_LOCAL", "True") == "True" # Simplified check for local testing
+
 # Function to capture emotion continuously
 def capture_emotion():
+    if not ENABLE_LIVE_EMOTION:
+        print("Live emotion capture is disabled in this environment (likely cloud deployment).")
+        return
+        
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
-        print("Error: Camera not accessible")
+        print("Error: Camera not accessible. Disabling live emotion thread.")
         return
 
     while True:
@@ -160,6 +189,7 @@ def capture_emotion():
             print("Error: Failed to capture frame")
             break
         try:
+            # You may want to resize the frame here for performance if needed
             analysis = DeepFace.analyze(frame, actions=['emotion'], enforce_detection=False)
             if analysis and isinstance(analysis, list) and 'dominant_emotion' in analysis[0]:
                 dominant_emotion = analysis[0]['dominant_emotion']
@@ -172,15 +202,12 @@ def capture_emotion():
     cap.release()
     cv2.destroyAllWindows()
 
-# Conditional startup based on environment
-if os.getenv("IS_RENDER", "false").lower() == "true":
-    print("Running in Render environment. Skipping camera thread.")
+# Start the thread ONLY if running locally
+if ENABLE_LIVE_EMOTION:
+    print("Starting live emotion capture thread...")
+    threading.Thread(target=capture_emotion, daemon=True).start()
 else:
-    try:
-        threading.Thread(target=capture_emotion, daemon=True).start()
-    except Exception as e:
-        print(f"Could not start deepface thread: {e}")
-        pass
+    print("Running in headless environment. Live emotion feature will use existing file data.")
 
 # Home Route
 @app.route('/')
@@ -739,11 +766,11 @@ def upload_audio():
         sound.export(filepath, format="wav")
 
     print("Transcribing...")
-    segments, _ = whisper_model.transcribe(filepath)
+    segments, _ = stt_model.transcribe(filepath)
     text = "".join([seg.text for seg in segments])
     print(f"Transcribed text: {text}")
 
-    ai_response_text = get_your_voice_ai_response(text, prompt_template, emotion)  # Pass template to AI response
+    ai_response_text = get_your_voice_ai_response(text, prompt_template, emotion) # Pass template to AI response
     response_text = ai_response_text
     print(f"AI Response: {response_text}")
 
@@ -768,6 +795,11 @@ def upload_audio():
     voice_model_wav = os.path.join(voice_model_path, wav_files[0])
     output_path = os.path.join(app.config['RESPONSE_FOLDER'], f"{uuid.uuid4()}.wav")
 
+	# ✅ FIX 3: Get the TTS model using the lazy-loader
+    tts_model = get_tts_model()
+    if tts_model is None:
+        return jsonify({"error": "TTS model failed to load. Check memory/dependencies."}), 500
+    
     try:
         print(f"Generating TTS with reference: {voice_model_wav}")
         tts_model.tts_to_file(
