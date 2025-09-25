@@ -71,7 +71,9 @@ init_persona_db()
 MODEL_CACHE = {
     "whisper": None,
     "tts": None,
-    "deepface": None
+    "deepface": None,
+    "chroma_client": None,
+    "chroma_collection": None
 }
 
 def get_whisper_model():
@@ -100,13 +102,34 @@ def get_deepface_model():
     if MODEL_CACHE["deepface"] is None:
         print("Loading DeepFace model for the first time...")
         try:
-            # We import here to prevent it from being loaded at the application startup
             from deepface import DeepFace
             MODEL_CACHE["deepface"] = DeepFace
         except Exception as e:
             print(f"Failed to load DeepFace model: {e}")
             return None
     return MODEL_CACHE["deepface"]
+
+# ✅ FIX: Lazy Load ChromaDB
+def get_chroma_collection():
+    if MODEL_CACHE["chroma_collection"] is None:
+        print("Loading ChromaDB client and collection for the first time...")
+        db_path = "./chroma_db_data"
+        try:
+            # We import here to prevent it from being loaded at the application startup
+            import chromadb
+            from chromadb.utils import embedding_functions
+            client = chromadb.PersistentClient(path=db_path)
+            sentence_transformer_ef = embedding_functions.SentenceTransformerEmbeddingFunction(
+                model_name="all-MiniLM-L6-v2"
+            )
+            MODEL_CACHE["chroma_collection"] = client.get_or_create_collection(
+                name="user_chat_history",
+                embedding_function=sentence_transformer_ef
+            )
+        except Exception as e:
+            print(f"Error initializing ChromaDB: {e}")
+            return None
+    return MODEL_CACHE["chroma_collection"]
 
 # Initialize DB schema if not exists
 with db:
@@ -306,29 +329,9 @@ def analyze_emotion_trend():
     
 # Use a persistent client to save data to a directory
 # This will store your vector database in a folder named 'chroma_db_data'.
-db_path = "./chroma_db_data"
-try:
-    client = chromadb.PersistentClient(path=db_path)
-except Exception as e:
-    print(f"Error initializing ChromaDB client: {e}")
-    client = None
-
-# Set up the embedding function
-sentence_transformer_ef = embedding_functions.SentenceTransformerEmbeddingFunction(
-    model_name="all-MiniLM-L6-v2"
-)
-
-# Create or get the collection for user chat history
-if client:
-    user_chat_collection = client.get_or_create_collection(
-        name="user_chat_history",
-        embedding_function=sentence_transformer_ef
-    )
-else:
-    user_chat_collection = None
-
 def store_chat_interaction(user_id: str, user_message: str, bot_response: str):
-    if not user_chat_collection:
+    user_chat_collection = get_chroma_collection()
+    if user_chat_collection is None:
         print("ChromaDB is not initialized. Cannot store chat history.")
         return
     import time
@@ -347,7 +350,8 @@ def store_chat_interaction(user_id: str, user_message: str, bot_response: str):
         print(f"Error storing chat interaction in ChromaDB: {e}")
 
 def get_relevant_context(user_id: str, query: str, n_results: int = 5):
-    if not user_chat_collection:
+    user_chat_collection = get_chroma_collection()
+    if user_chat_collection is None:
         return ""
     try:
         print("\n" + "="*50)
@@ -422,7 +426,6 @@ def chat_with_llama3(user_input):
         response.raise_for_status()
         raw_message = response.json()["choices"][0]["message"]["content"]
         cleaned_message = re.sub(r'\*+', '', raw_message)
-        # Fix: Move the print statement to be inside the try block
         print(f"Generated AI Response: {cleaned_message}")
         store_chat_interaction(user_id, user_input, cleaned_message)
         return cleaned_message
@@ -442,7 +445,8 @@ def chat():
             bot_response = chat_with_llama3(user_message)
             return jsonify({"response": bot_response, "user_message": user_message})
     chat_history_for_display = []
-    if user_chat_collection:
+    user_chat_collection = get_chroma_collection()
+    if user_chat_collection is not None:
         try:
             all_chats = user_chat_collection.get(
                 where={"user_id": user_id},
@@ -461,7 +465,8 @@ def clear_chat_history():
     user_id = session.get('userid')
     if not user_id:
         return redirect(url_for('signin'))
-    if user_chat_collection:
+    user_chat_collection = get_chroma_collection()
+    if user_chat_collection is not None:
         try:
             user_chat_collection.delete(
                 where={"user_id": user_id}
