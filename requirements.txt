@@ -22,4 +22,3 @@ scipy==1.11.2
 spacy==3.5.4
 tensorflow==2.15.0
 tf-keras==2.15.0
-sentence-transformers
